@@ -13,7 +13,7 @@ class WeChatFollowUser{
         $ACCESS_TOKEN = WeChatInfo::getWeChatAccessToken();
         $url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={$ACCESS_TOKEN}&openid={$openid}&lang=zh_CN";
         $ans = file_get_contents($url);
-        Func::log($url."\r\n".$ans);
+        Func::log($url."\r\n".$ans,"OfficialAccounts");
         $ans = json_decode($ans,true);
         return $ans;
     }
@@ -34,7 +34,7 @@ class WeChatFollowUser{
         $data["user_list"] = $data;
         $data = Func::aryToJsonStr2($data);
         $ans = Func::request($url, $data);
-        Func::log($url."\r\n".$ans);
+        Func::log($url."\r\n".$ans,"OfficialAccounts");
         
         return json_decode($ans, true);
     }

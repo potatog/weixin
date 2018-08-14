@@ -1,4 +1,5 @@
 <?php
+ini_set('date.timezone','Asia/Shanghai');
 /**
  * 静态配置文件
  * @author Administrator

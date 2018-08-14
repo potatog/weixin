@@ -157,6 +157,13 @@ class Func{
         }
     }
     
+    /**
+     * 
+     * 发送post请求
+     * @param unknown $url
+     * @param unknown $data
+     * @return mixed
+     */
     public static function request($url, $data)
     {
         $curl = curl_init();
@@ -171,5 +178,99 @@ class Func{
         $output = curl_exec($curl);
         curl_close($curl);
         return $output;
+    }
+    
+    /**
+     * 校验微信端后台配置url时的请求
+     */
+    public static function verifyUrlConfig($request,$token)
+    {
+        $status = true;
+        
+        if(!is_array($request))$status =  false;
+        if(!isset($request["signature"]))$status =  false;
+        if(!isset($request["echostr"]))$status =  false;
+        if(!isset($request["timestamp"]))$status =  false;
+        if(!isset($request["nonce"]))$status =  false;
+        $signature = '';
+        if($status)
+        {
+            $data = array();
+            //1.将token、timestamp、nonce三个参数进行字典序排序
+            
+            $data["token"] = $token;
+            
+            $data["timestamp"] = $request["timestamp"];
+            $data["nonce"] = $request["nonce"];
+            sort($data, SORT_STRING);
+        
+            //2.将三个参数字符串拼接成一个字符串进行sha1加密
+            $tempStr = implode($data);
+            $signature = sha1($tempStr);
+        
+            //3.开发者获得加密后的字符串可与signature对比
+            if($signature == $request["signature"])
+            {
+                $status =  true;
+            }
+            else
+            {
+                $status =  false;
+            }
+        }
+        return $status;
+    }
+    
+    /**
+     * 微信消息加密
+     */
+    public static function wechat_encode($xml,$timeStamp,$nonce,$appid,$token,$encodingAesKey)
+    {
+        require_once 'WeChat/_cryption/wxBizMsgCrypt.php';
+        
+        $pc = new WXBizMsgCrypt($token, $encodingAesKey, $appid);
+        $encryptMsg = '';
+        $errCode = $pc->encryptMsg($xml, $timeStamp, $nonce, $encryptMsg);
+        if($errCode == 0)
+        {
+            return array(
+                "status" => true,
+                "data" => $encryptMsg
+            );
+        }
+        return array(
+                "status" => false,
+                "data" => $encryptMsg
+            );
+    }
+    
+    /**
+     * 微信消息解密
+     */
+    public static function wechat_decode($encryptMsg, $timeStamp, $nonce,  $msg_sign, $appid, $token, $encodingAesKey)
+    {
+        //首先判断一下是否包含明文信息，如果有 那么不去执行解密操作
+        $encryptAryMsg = Func::xmlToArray($encryptMsg);
+        require_once 'WeChat/_cryption/wxBizMsgCrypt.php';
+        
+        $pc = new WXBizMsgCrypt($token, $encodingAesKey, $appid);
+        
+        $format = "<xml><ToUserName><![CDATA[toUser]]></ToUserName><Encrypt><![CDATA[%s]]></Encrypt></xml>";
+        $from_xml = sprintf($format, $encryptAryMsg["Encrypt"]);
+        
+        $msg = '';
+        $errCode = $pc->decryptMsg($msg_sign, $timeStamp, $nonce, $from_xml, $msg);
+
+        if($errCode == 0)
+        {
+            return array(
+                "status" => true,
+                "data" => $msg
+            );
+        }
+        return array(
+                "status" => false,
+                "data" => $msg
+            );
     }
 }

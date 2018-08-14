@@ -1,5 +1,4 @@
 <?php
-ini_set('date.timezone','Asia/Shanghai');
 require_once 'WeChat/Func.class.php';
 require_once 'WeChat/OfficialAccounts/pkg/WeChatConfig.class.php';
 /**
@@ -159,38 +158,10 @@ class WechatMsgController{
     public static function responseWeChatUrlValidate($config)
     {
         if(!Func::isGET())return false;
-        $status = true;
         $request = $_GET;
         Func::log($request,"OfficialAccounts");
-        if(!is_array($request))$status =  false;
-        if(!isset($request["signature"]))$status =  false;
-        if(!isset($request["echostr"]))$status =  false;
-        if(!isset($request["timestamp"]))$status =  false;
-        if(!isset($request["nonce"]))$status =  false;
-        $signature = '';
-        if($status)
-        {
-            $data = array();
-            //1.将token、timestamp、nonce三个参数进行字典序排序
-            $data["token"] = $config["token"];
-            $data["timestamp"] = $request["timestamp"];
-            $data["nonce"] = $request["nonce"];
-            sort($data, SORT_STRING);
-            
-            //2.将三个参数字符串拼接成一个字符串进行sha1加密
-            $tempStr = implode($data);
-            $signature = sha1($tempStr);
-            
-            //3.开发者获得加密后的字符串可与signature对比
-            if($signature == $request["signature"])
-            {
-                $status =  true;
-            }
-            else 
-            {
-                $status =  false;
-            }
-        }
+        
+        $status = Func::verifyUrlConfig($request,WeChatConfig::$config["token"]);
         
         if($status)
         {
@@ -200,7 +171,7 @@ class WechatMsgController{
         else 
         {
             $response =  "fail";
-            Func::log("验证失败:".$signature,"OfficialAccounts");
+            Func::log("验证失败!","OfficialAccounts");
         }
         echo $response;
         return $response;
