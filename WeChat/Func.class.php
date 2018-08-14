@@ -273,4 +273,49 @@ class Func{
                 "data" => $msg
             );
     }
+    
+    
+    public static function random($length,$chars)
+    {
+        $hash = '';
+        $max = strlen($chars) - 1;
+        for($i = 0; $i < $length; $i++)
+        {
+            $hash .= $chars[mt_rand(0, $max)];//生成随机数用于随机获取大小写字母与数字组成一个六位字符串。
+        }
+        return $hash;
+    }
+    
+    public static function randomNumber($length)
+    {
+        $chars = "0123456789";
+        return Func::random($length, $chars);
+    }
+    
+    public static function randomLetter($length)
+    {
+        $chars = "QWERTYUIOPLKJHGFDSAZXCVBNMqwertyuioplkjhgfdsazxcvbnm";
+        return Func::random($length, $chars);
+    }
+    
+    public static function randomStr($length)
+    {
+        $chars = "QWERTYUIOPLKJHGFDSAZXCVBNMqwertyuioplkjhgfdsazxcvbnm0123456789";
+        return Func::random($length, $chars);
+    }
+    
+    public static function aryToXML($standardData)
+    {
+        $xml = '<xml>';
+        foreach ($standardData as $key => $val)
+        {
+            if (is_numeric($val)){
+                $xml.="<".$key.">".$val."</".$key.">";
+            }else{
+                $xml.="<".$key."><![CDATA[".$val."]]></".$key.">";
+            }
+        }
+        $xml .= '</xml>';
+        return $xml;
+    }
 }
